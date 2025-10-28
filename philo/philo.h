@@ -1,13 +1,12 @@
 #ifndef PHILO_H
-#define PHILO_H
+# define PHILO_H
 
-#include <stdio.h>
-#include <sys/time.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <pthread.h>
-#include <limits.h>
+# include <limits.h>
+# include <pthread.h>
+# include <stdlib.h>
+# include <unistd.h>
+# include <sys/time.h>
+# include <stdio.h>
 
 typedef struct s_philo
 {
@@ -27,36 +26,33 @@ typedef struct s_philo
 	pthread_mutex_t	*l_fork;
 	pthread_mutex_t	*write_lock;
 	pthread_mutex_t	*dead_lock;
-	pthread_mutex_t	*meal_lock;
-}					t_philo;
+	pthread_mutex_t	meal_lock;
+}				t_philo;
 
 typedef struct s_program
 {
 	int				dead_flag;
+	size_t			start_time;
 	pthread_mutex_t	dead_lock;
 	pthread_mutex_t	meal_lock;
 	pthread_mutex_t	write_lock;
 	t_philo			*philos;
-}					t_program;
+}				t_program;
 
-//validation
-int	check_args(int argc, char **argv);
-int	ft_usleep(size_t milliseconds);
+int		check_args(int argc, char **argv);
+int		ft_usleep(size_t milliseconds);
 size_t	get_current_time(void);
-long    ft_atol(const char *str);
+long	ft_atol(const char *str);
 
-//initalization
-void    init_program(t_program *program, char **argv);
-void    init_forks(pthread_mutex_t *forks, int philo_num);
-void    init_philos(t_program *program, pthread_mutex_t *forks, char **argv);
+void	init_program(t_program *program, char **argv);
+void	init_forks(pthread_mutex_t *forks, int philo_num);
+void	init_philos(t_program *program, pthread_mutex_t *forks, char **argv);
 
-//routine
-void    *philo_routine(void *arg);
-void    print_message(char *str, t_philo *philo);
+void	*philo_routine(void *arg);
+void	print_message(char *str, t_philo *philo);
 int		is_dead(t_philo *philo);
 
-//monitoring
-int start_simulation(t_program *program);
-void cleanup(t_program *program, pthread_mutex_t *forks);
+int		start_simulation(t_program *program);
+void	cleanup(t_program *program, pthread_mutex_t *forks);
 
 #endif

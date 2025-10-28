@@ -1,16 +1,17 @@
-#include <stdio.h>
-#include <limits.h>
+#include "philo.h"
 
 static int	ft_isdigit(char c)
 {
 	return (c >= '0' && c <= '9');
 }
 
-long    ft_atol(const char *str)
+long	ft_atol(const char *str)
 {
-	long	res = 0;
-	int		i = 0;
+	long	res;
+	int		i;
 
+	res = 0;
+	i = 0;
 	while (str[i] == ' ' || (str[i] >= 9 && str[i] <= 13))
 		i++;
 	if (str[i] == '+')
@@ -25,8 +26,9 @@ long    ft_atol(const char *str)
 
 static int	is_number(const char *str)
 {
-	int	i = 0;
+	int	i;
 
+	i = 0;
 	if (!str || !str[0])
 		return (0);
 	if (str[0] == '-' || str[0] == '\0')
@@ -44,9 +46,10 @@ static int	is_number(const char *str)
 
 int	check_args(int argc, char **argv)
 {
-	int		i = 1;
+	int		i;
 	long	val;
 
+	i = 1;
 	if (argc != 5 && argc != 6)
 		return (printf("Error: wrong number of arguments\n"), 0);
 	while (i < argc)
