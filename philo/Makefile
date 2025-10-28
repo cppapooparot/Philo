@@ -1,4 +1,4 @@
-NAME = philo
+NME = philo
 
 CC = cc
 CFLAGS = -Wall -Wextra -Werror -pthread
