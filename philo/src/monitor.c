@@ -1,8 +1,9 @@
-#include "philo.h"
+#include "../include/philo.h"
 
 static int	check_death(t_philo *philos, int num_philos)
 {
-	int	i;
+	int		i;
+	size_t	time;
 
 	i = 0;
 	while (i < num_philos)
@@ -11,11 +12,14 @@ static int	check_death(t_philo *philos, int num_philos)
 		if (get_current_time() - philos[i].last_meal >= philos[i].time_to_die
 			&& philos[i].eating == 0)
 		{
-			pthread_mutex_unlock(&philos[i].meal_lock);
-			print_message("died", &philos[i]);
 			pthread_mutex_lock(philos[i].dead_lock);
 			*philos[i].dead = 1;
+			pthread_mutex_lock(philos[i].write_lock);
+			time = get_current_time() - philos[i].start_time;
+			printf("%zu %d died\n", time, philos[i].id);
+			pthread_mutex_unlock(philos[i].write_lock);
 			pthread_mutex_unlock(philos[i].dead_lock);
+			pthread_mutex_unlock(&philos[i].meal_lock);
 			return (1);
 		}
 		pthread_mutex_unlock(&philos[i].meal_lock);
@@ -51,7 +55,7 @@ static int	check_meals_eaten(t_philo *philos, int num_philos)
 	return (0);
 }
 
-int	start_simulation(t_program *program)
+static int	create_threads(t_program *program)
 {
 	int	i;
 	int	num_philos;
@@ -60,19 +64,31 @@ int	start_simulation(t_program *program)
 	num_philos = program->philos[0].num_of_philos;
 	while (i < num_philos)
 	{
-		if (pthread_create(&program->philos[i].thread,
-				NULL, philo_routine, &program->philos[i]) != 0)
+		if (pthread_create(&program->philos[i].thread, NULL, philo_routine,
+				&program->philos[i]) != 0)
 			return (0);
 		i++;
 	}
 	while (get_current_time() < program->start_time)
 		continue ;
-	while (!program->dead_flag)
+	return (1);
+}
+
+static void	monitor_and_join(t_program *program, int num_philos)
+{
+	int	i;
+	int	should_stop;
+
+	should_stop = 0;
+	while (!should_stop)
 	{
 		if (check_death(program->philos, num_philos))
 			break ;
 		if (check_meals_eaten(program->philos, num_philos) > 0)
 			break ;
+		pthread_mutex_lock(&program->dead_lock);
+		should_stop = program->dead_flag;
+		pthread_mutex_unlock(&program->dead_lock);
 		usleep(1000);
 	}
 	i = 0;
@@ -81,25 +97,15 @@ int	start_simulation(t_program *program)
 		pthread_join(program->philos[i].thread, NULL);
 		i++;
 	}
-	return (1);
 }
 
-void	cleanup(t_program *program, pthread_mutex_t *forks)
+int	start_simulation(t_program *program)
 {
-	int	i;
 	int	num_philos;
 
-	i = 0;
+	if (!create_threads(program))
+		return (0);
 	num_philos = program->philos[0].num_of_philos;
-	while (i < num_philos)
-	{
-		pthread_mutex_destroy(&forks[i]);
-		pthread_mutex_destroy(&program->philos[i].meal_lock);
-		i++;
-	}
-	pthread_mutex_destroy(&program->dead_lock);
-	pthread_mutex_destroy(&program->meal_lock);
-	pthread_mutex_destroy(&program->write_lock);
-	free(program->philos);
-	free(forks);
+	monitor_and_join(program, num_philos);
+	return (1);
 }

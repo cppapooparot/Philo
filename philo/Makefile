@@ -1,17 +1,20 @@
-NME = philo
+NAME = philo
 
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -pthread
+CFLAGS = -Wall -Wextra -Werror
 RM = rm -f
 
-SOURCES = main.c \
-          init.c \
-          check_args.c \
-          routine.c \
-          monitor.c \
-          utils.c
+SRCDIR = .
+SOURCES = src/main.c \
+          src/init.c \
+          src/check_args.c \
+          src/routine.c \
+          src/monitor.c \
+          src/utils.c \
+		  src/routine_utils.c \
 
-OBJECTS = $(SOURCES:.c=.o)
+SRCS = $(addprefix $(SRCDIR)/, $(SOURCES))
+OBJECTS = $(SRCS:.c=.o)
 
 GREEN = \033[0;32m
 RED = \033[0;31m
@@ -24,7 +27,7 @@ $(NAME): $(OBJECTS)
 	@$(CC) $(CFLAGS) $(OBJECTS) -o $(NAME)
 	@echo "$(GREEN)✓ $(NAME) created successfully!$(RESET)"
 
-%.o: %.c philo.h
+$(SRCDIR)/%.o: $(SRCDIR)/%.c $(SRCDIR)/philo.h
 	@echo "Compiling $<..."
 	@$(CC) $(CFLAGS) -c $< -o $@
 
@@ -38,4 +41,4 @@ fclean: clean
 
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re test debug valgrind
